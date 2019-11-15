@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <color name="colorPrimary">#008577</color>
-    <color name="colorPrimaryDark">#00574B</color>
-    <color name="colorAccent">#D81B60</color>
-    <color name="facebookBlue">#3B5998</color>
-    <color name="gradientEnd">#3867D5</color>
-    <color name="gradientStart">#81C7F5</color>
-</resources>
