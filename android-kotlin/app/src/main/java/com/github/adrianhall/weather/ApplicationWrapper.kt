@@ -5,8 +5,11 @@ import com.github.adrianhall.weather.repositories.LocationsRepository
 import com.github.adrianhall.weather.repositories.SettingsRepository
 import com.github.adrianhall.weather.services.StorageService
 import com.github.adrianhall.weather.services.UserPreferencesStorageService
+import com.github.adrianhall.weather.services.WeatherService
+import com.github.adrianhall.weather.ui.main.MainViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
+import org.koin.android.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
 import org.koin.dsl.module
@@ -20,9 +23,14 @@ import timber.log.Timber
 class ApplicationWrapper: Application() {
     companion object {
         val appModule = module {
+            // Services
+            single { WeatherService(get())                                  }
             single { UserPreferencesStorageService(get()) as StorageService }
             single { LocationsRepository(get())                             }
             single { SettingsRepository(get())                              }
+
+            // view models
+            viewModel { MainViewModel(get(), get()) }
         }
     }
 

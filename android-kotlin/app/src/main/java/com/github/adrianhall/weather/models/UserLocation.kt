@@ -11,7 +11,7 @@ import java.util.*
 data class UserLocation(val latitude: Double, val longitude: Double, var displayName: String = "") {
     companion object {
         val defaultLocations = listOf(
-            UserLocation(47.6062, -12.3321, "Seattle, USA"),
+            UserLocation(47.6062, -122.3321, "Seattle, USA"),
             UserLocation(51.5074, -0.1278, "London, England"),
             UserLocation(36.3932, 25.4615, "Santorini, Greece")
         )

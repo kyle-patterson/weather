@@ -1,10 +1,9 @@
 package com.github.adrianhall.weather.ui
 
-import android.view.View
-import android.view.ViewGroup
-import android.widget.ProgressBar
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import com.github.adrianhall.weather.R
+import com.github.adrianhall.weather.ui.main.MainActivity
 import kotlin.concurrent.thread
 
 /**
@@ -28,10 +27,19 @@ class SplashActivity : AppCompatActivity() {
 
         //All the work needs to be done on a non-UI thread.
         thread(start = true) {
-            runOnUiThread {
-                //startActivity(MainActivity.intent(this@SplashActivity))
-                //finish()
-            }
+            // Once all the work is done, start the main activity
+            runOnUiThread { startMainActivity() }
         }
+    }
+
+    /**
+     * Starts the main activity (once everything is completed)
+     */
+    private fun startMainActivity() {
+        val intent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        startActivity(intent)
+        finish()
     }
 }

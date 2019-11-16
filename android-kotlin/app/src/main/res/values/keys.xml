@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Facebook SDK Application Identiers -->
+    <string name="facebook_app_id">426629028238436</string>
+    <string name="fb_login_protocol_scheme">fb426629028238436</string>
+
+    <!-- Dark Sky API Key -->
+    <string name="dark_sky_api_key">420dd3bc86b08bdd4ff91d201c41daa1</string>
+</resources>
