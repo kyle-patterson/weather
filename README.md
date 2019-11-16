@@ -36,6 +36,17 @@ Deploying your backend:
 
 If you are a member of the SDK team, you are not allowed to use "tribal knowledge".  You must use the available documentation, blogs, samples, etc.
 
+## Test Users
+
+The following test users are available.  See Adrian for the password.
+
+|User ID        |Email Address                  |
+|---------------|-------------------------------|
+|100749868064594|tqpdqraiep_1573921333@tfbnw.net|
+|101217064683622|xzcattfhsa_1573921329@tfbnw.net|
+|105375930929741|elbngyqapq_1573921334@tfbnw.net|
+|106560850809995|asbtdqhuro_1573921332@tfbnw.net|
+
 ## Available apps
 
 The following apps have been completed:
