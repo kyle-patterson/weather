@@ -15,6 +15,7 @@ import com.github.adrianhall.weather.models.UserSettings
 import com.github.adrianhall.weather.models.Weather
 import com.github.adrianhall.weather.services.WeatherService
 import com.github.adrianhall.weather.utils.SIConverter
+import com.github.adrianhall.weather.utils.WeatherConditions
 import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
@@ -122,10 +123,12 @@ class LocationsAdapter(private val weatherService: WeatherService): RecyclerView
         /**
          * Once the weather arrives, bind the weather to the UI
          */
-        fun bindWeather(weather: Weather?, userSettings: UserSettings) {
+        private fun bindWeather(weather: Weather?, userSettings: UserSettings) {
             loadingProgress.visibility = View.INVISIBLE
             weather?.currently?.run {
-                getConditionDrawable(this.icon)?.run { conditionsImageView.setImageResource(this) }
+                WeatherConditions.getWeatherDrawable(this.icon)?.let { drawable ->
+                    conditionsImageView.setImageResource(drawable)
+                }
 
                 temperatureTextView.text = "%.0f°".format(SIConverter.temperature(this.temperature, userSettings))
                 temperatureTextView.visibility = View.VISIBLE

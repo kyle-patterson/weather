@@ -51,4 +51,7 @@ dependencies {
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.10.0"
     // HTTP Client
     implementation "com.squareup.okhttp3:okhttp:4.2.1"
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    // Permissions management
+    implementation 'com.karumi:dexter:6.0.0'
 }

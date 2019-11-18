@@ -1,15 +1,23 @@
 package com.github.adrianhall.weather.ui.main
 
+import android.Manifest
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.LinearLayout
+import android.view.View
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.lifecycle.Observer
 import com.github.adrianhall.weather.R
 import com.github.adrianhall.weather.models.UserLocation
 import com.github.adrianhall.weather.models.UserSettings
 import com.github.adrianhall.weather.services.WeatherService
+import com.karumi.dexter.Dexter
+import com.karumi.dexter.PermissionToken
+import com.karumi.dexter.listener.PermissionDeniedResponse
+import com.karumi.dexter.listener.PermissionGrantedResponse
+import com.karumi.dexter.listener.PermissionRequest
+import com.karumi.dexter.listener.single.PermissionListener
 import kotlinx.android.synthetic.main.activity_main.*
 import org.koin.android.ext.android.inject
 import org.koin.android.viewmodel.ext.android.viewModel
@@ -22,7 +30,7 @@ import timber.log.Timber
  * locations that the user wants to monitor.  However, it also has other jobs, including handling
  * location management, asking for permissions, and triggering navigation requests.
  */
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), PermissionListener {
     private val vm by viewModel<MainViewModel>()
     private val weatherService: WeatherService by inject()
 
@@ -40,6 +48,13 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.apply {
             setTitle(R.string.title_main_activity)
         }
+
+        // Ask for permissions to use location
+        Dexter
+            .withActivity(this)
+            .withPermission(Manifest.permission_group.LOCATION)
+            .withListener(this)
+            .check()
 
         // Configure the locations list
         val adapter = LocationsAdapter(weatherService).apply {
@@ -83,6 +98,58 @@ class MainActivity : AppCompatActivity() {
             R.id.menu_settings -> { startSettingsActivity(); true }
             else               -> super.onOptionsItemSelected(item)
         }
+
+    /**
+     * Method called whenever a requested permission has been granted
+     *
+     * @param response A response object that contains the permission that has been requested and
+     * any additional flags relevant to this response
+     */
+    override fun onPermissionGranted(response: PermissionGrantedResponse?) {
+        current_location_fragment.visibility = View.VISIBLE
+        supportFragmentManager.run {
+            if (fragments.count() > 0) {
+                beginTransaction().replace(R.id.current_location_fragment, CurrentLocationFragment()).commit()
+            } else {
+                beginTransaction().add(R.id.current_location_fragment, CurrentLocationFragment()).commit()
+            }
+        }
+
+        // Connect the recycler view top to the fragment instead of the app bar
+        val constraints = ConstraintSet()
+        constraints.clone(main_layout)
+        constraints.connect(R.id.locations_list, ConstraintSet.TOP, R.id.current_location_fragment, ConstraintSet.BOTTOM, 0)
+        constraints.applyTo(main_layout)
+    }
+
+    /**
+     * Method called whenever Android asks the application to inform the user of the need for the
+     * requested permission. The request process won't continue until the token is properly used
+     *
+     * @param permission The permission that has been requested
+     * @param token Token used to continue or cancel the permission request process. The permission
+     * request process will remain blocked until one of the token methods is called
+     */
+    override fun onPermissionRationaleShouldBeShown(permission: PermissionRequest?, token: PermissionToken?) {
+        // TODO: Implement show-rationale for permissions properly
+        token?.continuePermissionRequest()
+    }
+
+    /**
+     * Method called whenever a requested permission has been denied
+     *
+     * @param response A response object that contains the permission that has been requested and
+     * any additional flags relevant to this response
+     */
+    override fun onPermissionDenied(response: PermissionDeniedResponse?) {
+        // Connect the recycler view top to the app bar instead of the fragment
+        val constraints = ConstraintSet()
+        constraints.clone(main_layout)
+        constraints.connect(R.id.locations_list, ConstraintSet.TOP, R.id.main_app_bar, ConstraintSet.BOTTOM, 0)
+        constraints.applyTo(main_layout)
+        // Make the fragment for the current location invisible
+        current_location_fragment.visibility = View.INVISIBLE
+    }
 
     private fun onAddLocationClicked() {
         Timber.d("CLICK: add-location")
