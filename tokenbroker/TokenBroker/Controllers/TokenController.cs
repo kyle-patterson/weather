@@ -49,19 +49,13 @@ namespace TokenBroker.Controllers
 
         private PermissionProperties GetPermission(string userID)
         {
-            string kvUri = _configuration["KeyVaultName"];
-
-            var sclient = new SecretClient(new Uri(kvUri), new DefaultAzureCredential());
-
-            var endpoint = sclient.GetSecret("ENDPOINT").Value.ToString();
-            var key = sclient.GetSecret("KEY").Value.ToString();
+            var endpoint = _configuration["ENDPOINT"];
+            var key = _configuration["KEY"];
 
             CosmosClient cosmosClient;
 
             if (endpoint != null && key != null)
             {
-                _logger.LogInformation(kvUri);
-                _logger.LogInformation(endpoint);
                 cosmosClient = new CosmosClient(endpoint, key);
             }
             else
