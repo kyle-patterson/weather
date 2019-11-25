@@ -10,8 +10,10 @@ namespace TokenBroker.Controllers
     using Azure.Identity;
     using Azure.Security.KeyVault.Secrets;
     using Microsoft.Azure.Cosmos;
+    using Microsoft.Extensions.Configuration;
     using System.Configuration;
     using System.Net;
+    using System;
 
     [ApiController]
     [Route("api/[controller]")]
@@ -21,10 +23,12 @@ namespace TokenBroker.Controllers
         private const string containerID = "tempCollection";
         private static readonly string permissionID = containerID + "PK";
 
+        private readonly IConfiguration _configuration;
         private readonly ILogger<TokenController> _logger;
 
-        public TokenController(ILogger<TokenController> logger)
+        public TokenController(IConfiguration configuration, ILogger<TokenController> logger)
         {
+            _configuration = configuration;
             _logger = logger;
         }
 
@@ -45,10 +49,25 @@ namespace TokenBroker.Controllers
 
         private PermissionProperties GetPermission(string userID)
         {
-            var endpoint = ConfigurationManager.AppSettings["ENDPOINT"];
-            var key = ConfigurationManager.AppSettings["KEY"];
+            string kvUri = _configuration["KeyVaultName"];
 
-            var cosmosClient = new CosmosClient(endpoint, key);
+            var sclient = new SecretClient(new Uri(kvUri), new DefaultAzureCredential());
+
+            var endpoint = sclient.GetSecret("ENDPOINT").Value.ToString();
+            var key = sclient.GetSecret("KEY").Value.ToString();
+
+            CosmosClient cosmosClient;
+
+            if (endpoint != null && key != null)
+            {
+                _logger.LogInformation(kvUri);
+                _logger.LogInformation(endpoint);
+                cosmosClient = new CosmosClient(endpoint, key);
+            }
+            else
+            {
+                throw new Exception("Endpoint or key is null");
+            }
 
             var database = cosmosClient.GetDatabase(databaseID);
 
