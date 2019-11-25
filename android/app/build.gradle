@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "com.github.adrianhall.weather"
-        minSdkVersion 23
+        minSdkVersion 26
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
@@ -29,6 +29,16 @@ android {
     compileOptions {
         sourceCompatibility = 1.8
         targetCompatibility = 1.8
+    }
+
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.md'
+        exclude 'META-INF/NOTICE.md'
+        exclude 'META-INF/io.netty.versions.properties'
+        exclude 'META-INF/INDEX.LIST'
     }
 
 }
@@ -61,4 +71,7 @@ dependencies {
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.10.0"
     // HTTP Requests
     implementation "com.squareup.okhttp3:okhttp:4.2.1"
+
+    //implementation "com.microsoft.azure:azure-cosmos:3.0.1"
+    implementation "com.azure.android:azuredata:0.3.0"
 }

@@ -17,6 +17,10 @@ import org.koin.android.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 import timber.log.Timber
+import com.azure.data.*
+import com.azure.data.model.PermissionMode
+import com.github.adrianhall.weather.models.FavoriteCity
+import java.io.Console
 
 @Suppress("unused")
 class ApplicationWrapper : Application() {
@@ -37,7 +41,13 @@ class ApplicationWrapper : Application() {
     }
 
     override fun onCreate() {
+        val endpoint = "kylepaweather"
+        val key = ""
+
         super.onCreate()
+
+        AzureData.configure(applicationContext, endpoint, key, PermissionMode.All)
+
 
         // Logging initialization
         if (BuildConfig.DEBUG) {

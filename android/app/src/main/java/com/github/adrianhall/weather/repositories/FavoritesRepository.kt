@@ -2,14 +2,20 @@ package com.github.adrianhall.weather.repositories
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.azure.data.AzureData
+import com.azure.data.createDocument
+import com.azure.data.findDocument
+import com.azure.data.getCollection
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.github.adrianhall.weather.auth.AuthenticationRepository
 import com.github.adrianhall.weather.models.FavoriteCity
+import com.github.adrianhall.weather.models.FavoriteCityList
 import com.github.adrianhall.weather.services.StorageService
 import timber.log.Timber
+import java.util.logging.ConsoleHandler
 
 class FavoritesRepository(private val storageService: StorageService, private val authenticationRepository: AuthenticationRepository) {
     private val mapper = ObjectMapper().registerKotlinModule()
@@ -30,22 +36,22 @@ class FavoritesRepository(private val storageService: StorageService, private va
         Timber.d("BEGIN: Loading cities from backing store")
         val accessToken = authenticationRepository.user.value!!.accessToken
 
-        storageService.loadJson(accessToken) { jsonStr, error ->
-            if (error != null) {
-                Timber.e(error)
-            }
-            if (error == null && jsonStr != null) {
+        AzureData.getDocuments("tempCollection","fakeDB", FavoriteCityList::class.java){ favorites ->
+            var resources = favorites.resource
+            if (resources != null && resources.count != 0) {
+                var jsonStr = resources.items[0].cityListJson
                 // Ignore things we don't want to understand.
                 mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 val cities = mapper.readValue<List<FavoriteCity>>(jsonStr)
                 mFavorites.postValue(cities)
             } else {
                 // Fall-through for no data / errors
-                val seattle = FavoriteCity(47.60357, -122.32945, "Seattle, USA")
-                val london = FavoriteCity(51.509865, -0 - 0.118092, "London, UK")
-                mFavorites.postValue(listOf(seattle, london))
+                /*val seattle = FavoriteCity(47.60357, -122.32945, "Seattle, USA")
+                val london = FavoriteCity(51.509865, -0 - 0.118092, "London, UK")*/
+                mFavorites.postValue(ArrayList<FavoriteCity>())
             }
         }
+
         Timber.d("END: Loading cities from backing store")
     }
 
@@ -58,9 +64,22 @@ class FavoritesRepository(private val storageService: StorageService, private va
         val accessToken = authenticationRepository.user.value!!.accessToken
         val jsonStr = mapper.writeValueAsString(cities)
         Timber.d("JSON = $jsonStr")
-        storageService.saveJson(jsonStr, accessToken) { error ->
-            if (error != null) Timber.e(error)
+
+        val userid : String = authenticationRepository.user.value!!.properties["user_id"]!!
+        var cityListObj = FavoriteCityList(id = userid, userid = userid, cityListJson = jsonStr )
+
+        if(cities.isEmpty())
+        {
+            AzureData.deleteDocument(partitionKey = userid, collectionId = "tempCollection", databaseId = "fakeDB", documentId = userid){}
         }
+        else
+        {
+            AzureData.createOrUpdateDocument(document = cityListObj, partitionKey = userid, collectionId = "tempCollection", databaseId = "fakeDB"){}
+        }
+
+        /*storageService.saveJson(jsonStr, accessToken) { error ->
+            if (error != null) Timber.e(error)
+        }*/
         Timber.d("END: Saving cities to backing store")
     }
 

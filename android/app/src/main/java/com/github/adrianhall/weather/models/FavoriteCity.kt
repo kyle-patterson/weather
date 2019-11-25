@@ -6,17 +6,20 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.fasterxml.jackson.annotation.JsonIgnore
 import java.util.*
+import com.azure.data.model.Document
 
 /**
  * The model for the favorites.  This provides the longitude / latitude / display name and
  * current location flag.  We have a "dataHasChanged" observable that is triggered when
  * anything is changed.
  */
-class FavoriteCity {
+class FavoriteCity (id: String? = null) : Document(id) {
     private var mDateChanged: MutableLiveData<Date?> = MutableLiveData()
 
     @JsonIgnore
     val dataHasChanged: LiveData<Date?> = mDateChanged
+
+    var userid: String = ""
 
     var latitude: Double = 0.0
         private set
@@ -31,7 +34,7 @@ class FavoriteCity {
     var isCurrentLocation: Boolean = false
         private set
 
-    constructor(latitude: Double = 0.0, longitude: Double = 0.0, displayName: String = "") {
+    constructor(latitude: Double = 0.0, longitude: Double = 0.0, displayName: String = "") : this() {
         this.latitude = latitude
         this.longitude = longitude
         this.displayName = displayName
