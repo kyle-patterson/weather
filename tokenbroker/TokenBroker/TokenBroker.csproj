@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <Platforms>AnyCPU;x64</Platforms>
     <ApplicationInsightsResourceId>/subscriptions/2259c7f2-8882-420a-87a9-13190cd828a0/resourcegroups/weather/providers/microsoft.insights/components/TokenBroker</ApplicationInsightsResourceId>
+    <UserSecretsId>dfa1a035-561e-452a-b412-84c54b5e46e3</UserSecretsId>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

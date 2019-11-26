@@ -14,6 +14,8 @@ namespace TokenBroker.Controllers
     using System.Configuration;
     using System.Net;
     using System;
+    using Microsoft.Azure.Services.AppAuthentication;
+    using Microsoft.Azure.KeyVault;
 
     [ApiController]
     [Route("api/[controller]")]
@@ -51,14 +53,8 @@ namespace TokenBroker.Controllers
 
         private PermissionProperties GetPermission(string userID)
         {
-
-            var uri = new Uri(kvUri);
-            var cred = new DefaultAzureCredential();
-            var sclient = new SecretClient(uri, cred);
-
-            var endpoint = sclient.GetSecretAsync("ENDPOINT").GetAwaiter().GetResult().Value.ToString();
-            var key = sclient.GetSecretAsync("KEY").GetAwaiter().GetResult().Value.ToString();
-
+            var endpoint = _configuration["ENDPOINT"];
+            var key = _configuration["KEY"];
             CosmosClient cosmosClient;
 
             if (endpoint != null && key != null)
