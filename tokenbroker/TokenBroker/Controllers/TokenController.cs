@@ -26,6 +26,8 @@ namespace TokenBroker.Controllers
         private readonly IConfiguration _configuration;
         private readonly ILogger<TokenController> _logger;
 
+        private const string kvUri = "https://tokenbroker-0-kv.vault.azure.net/";
+
         public TokenController(IConfiguration configuration, ILogger<TokenController> logger)
         {
             _configuration = configuration;
@@ -49,13 +51,20 @@ namespace TokenBroker.Controllers
 
         private PermissionProperties GetPermission(string userID)
         {
-            var endpoint = _configuration["ENDPOINT"];
-            var key = _configuration["KEY"];
+
+            var uri = new Uri(kvUri);
+            var cred = new DefaultAzureCredential();
+            var sclient = new SecretClient(uri, cred);
+
+            var endpoint = sclient.GetSecretAsync("ENDPOINT").GetAwaiter().GetResult().Value.ToString();
+            var key = sclient.GetSecretAsync("KEY").GetAwaiter().GetResult().Value.ToString();
 
             CosmosClient cosmosClient;
 
             if (endpoint != null && key != null)
             {
+                _logger.LogInformation(kvUri);
+                _logger.LogInformation(endpoint);
                 cosmosClient = new CosmosClient(endpoint, key);
             }
             else
