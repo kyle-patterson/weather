@@ -77,7 +77,7 @@ namespace TokenBroker.Controllers
                 _logger.LogDebug("User not found, creating user");
                 user = database.CreateUserAsync(userID).GetAwaiter().GetResult();
                 var container = database.GetContainer(containerID);
-                var partitionKey = new PartitionKey(Guid.NewGuid().ToString());
+                var partitionKey = new PartitionKey(userID);
 
                 var permissionProperties = new PermissionProperties(permissionID, PermissionMode.All, container, partitionKey);
                 user.CreatePermissionAsync(permissionProperties).Wait();

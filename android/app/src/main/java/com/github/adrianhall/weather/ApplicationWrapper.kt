@@ -1,6 +1,9 @@
 package com.github.adrianhall.weather
 
 import android.app.Application
+import android.content.Context
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.facebook.FacebookSdk
 import com.github.adrianhall.weather.auth.AuthenticationRepository
 import com.github.adrianhall.weather.auth.FacebookLoginManager
@@ -19,8 +22,15 @@ import org.koin.dsl.module
 import timber.log.Timber
 import com.azure.data.*
 import com.azure.data.model.PermissionMode
-import com.github.adrianhall.weather.models.FavoriteCity
-import java.io.Console
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.github.adrianhall.weather.models.Weather
+import okhttp3.*
+import java.io.IOException
+import android.os.StrictMode
+import androidx.core.content.ContextCompat.getSystemService
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+
+
 
 @Suppress("unused")
 class ApplicationWrapper : Application() {
@@ -38,16 +48,23 @@ class ApplicationWrapper : Application() {
             viewModel { FavoritesViewModel(get()) }
             viewModel { DetailsViewModel(get(), get())   }
         }
+
+        private var instance: ApplicationWrapper? = null
+
+        fun applicationContext() : Context {
+            return instance!!.applicationContext
+        }
     }
 
     override fun onCreate() {
+        val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
+        StrictMode.setThreadPolicy(policy)
         val endpoint = "kylepaweather"
         val key = ""
 
+        instance = this
+
         super.onCreate()
-
-        AzureData.configure(applicationContext, endpoint, key, PermissionMode.All)
-
 
         // Logging initialization
         if (BuildConfig.DEBUG) {

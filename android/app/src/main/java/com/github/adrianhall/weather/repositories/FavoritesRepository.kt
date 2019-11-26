@@ -1,21 +1,30 @@
 package com.github.adrianhall.weather.repositories
 
+import android.app.Application
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.azure.data.AzureData
-import com.azure.data.createDocument
-import com.azure.data.findDocument
-import com.azure.data.getCollection
+import com.azure.data.*
+import com.azure.data.model.PermissionMode
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.context.startKoin
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import com.github.adrianhall.weather.ApplicationWrapper
 import com.github.adrianhall.weather.auth.AuthenticationRepository
 import com.github.adrianhall.weather.models.FavoriteCity
 import com.github.adrianhall.weather.models.FavoriteCityList
 import com.github.adrianhall.weather.services.StorageService
+import org.jetbrains.anko.doAsync
+import java.net.*
 import timber.log.Timber
-import java.util.logging.ConsoleHandler
+import kotlin.concurrent.thread
+import kotlinx.coroutines.*
+import okhttp3.internal.wait
+
 
 class FavoritesRepository(private val storageService: StorageService, private val authenticationRepository: AuthenticationRepository) {
     private val mapper = ObjectMapper().registerKotlinModule()
@@ -36,6 +45,8 @@ class FavoritesRepository(private val storageService: StorageService, private va
         Timber.d("BEGIN: Loading cities from backing store")
         val accessToken = authenticationRepository.user.value!!.accessToken
 
+        ConfigureCosmos()
+
         AzureData.getDocuments("tempCollection","fakeDB", FavoriteCityList::class.java){ favorites ->
             var resources = favorites.resource
             if (resources != null && resources.count != 0) {
@@ -55,6 +66,31 @@ class FavoritesRepository(private val storageService: StorageService, private va
         Timber.d("END: Loading cities from backing store")
     }
 
+    private fun ConfigureCosmos() {
+        if (!AzureData.isConfigured) {
+
+            var endpoint = "kylepaweather"
+            var key = getResourceToken()
+
+            AzureData.configure(ApplicationWrapper.applicationContext(), endpoint, key, PermissionMode.All)
+        }
+    }
+
+    private fun getResourceToken() : String
+    {
+        val user_id = authenticationRepository.user.value!!.properties["user_id"]
+        var uri = "https://tokenbroker-dev-as.azurewebsites.net/api/token/"+user_id
+
+        return URL(uri).getText()
+    }
+
+    fun URL.getText(): String {
+        return openConnection().run {
+            this as HttpURLConnection
+            inputStream.bufferedReader().readText()
+        }
+    }
+
     /**
      * Saves the list of favorite cities to the backing store.  no need to post it back to the
      * list, but you should ensure only one "save" operation is running at any given time.
@@ -68,6 +104,7 @@ class FavoritesRepository(private val storageService: StorageService, private va
         val userid : String = authenticationRepository.user.value!!.properties["user_id"]!!
         var cityListObj = FavoriteCityList(id = userid, userid = userid, cityListJson = jsonStr )
 
+        ConfigureCosmos()
         if(cities.isEmpty())
         {
             AzureData.deleteDocument(partitionKey = userid, collectionId = "tempCollection", databaseId = "fakeDB", documentId = userid){}
